@@ -3,6 +3,10 @@
 import random, itertools
 import numpy as np
 
+def difficulty():
+	diff = input('Input difficulty: ')
+	while diff not in ['1','2','3']:
+		diff = input("Please input difficulty '1', '2' or '3': ")
 
 def create_grid(size, mines):
 	grid = []
@@ -25,9 +29,46 @@ def create_grid(size, mines):
 
 	return grid
 
-# print(create_grid(10, 5))
 
-for row in create_grid(20, 20):
-	print(row)
+def display_grid(grid):
+	n = len(grid)
+
+	print('╔', end = '')
+	for i in range(n - 1):
+		print('═══╦', end = '')
+	print('═══╗')
+
+	for i in range(n):
+		print('║', end = '')
+		for j in range(n):
+			print(' ' + str(grid[i][j]) + ' ' + '║', end = '')
+
+		if i != n-1:
+			print('\n╠', end = '')
+			for j in range(n - 1):
+				print('═══╬', end = '')
+			print('═══╣')
+		else:
+			print('\n╚', end = '')
+			for i in range(n - 1):
+				print('═══╩', end = '')
+			print('═══╝')
+
+
+display_grid(create_grid(10, 20))
+
+
+# def start_game:
+# 	diff = difficulty():
+
+# 	if diff == '1':
+# 		grid = create_grid(10, 10)
+# 	elif diff == '2':
+# 		grid = create_grid(20, 20)
+# 	else: 
+# 		grid == create_grid(50, 100)
+
+
+
 
 
