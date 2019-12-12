@@ -8,21 +8,21 @@ def difficulty():
 	while diff not in ['1','2','3']:
 		diff = input("Please input difficulty '1', '2' or '3': ")
 
-def create_grid(size, mines):
+def create_grid(height, width, mines):
 	grid = []
-	for i in range(size):
-		grid.append([0] * size)
+	for i in range(height):
+		grid.append([0] * width)
 
 	for i in range(mines):
 
 		while True:
-			pos = [random.randint(0, size - 1), random.randint(0, size - 1)]
+			pos = [random.randint(0, height - 1), random.randint(0, width - 1)]
 			if grid[pos[0]][pos[1]] != '*':
 				grid[pos[0]][pos[1]] = '*'
 				break
 
 		for x, y in itertools.product([-1,0,1], repeat = 2):
-			if (pos[0] + y) in range(size) and (pos[1] + x) in range(size):
+			if (pos[0] + y) in range(height) and (pos[1] + x) in range(width):
 				if grid[pos[0] + y][pos[1] + x] != '*':
 					grid[pos[0] + y][pos[1] + x] += 1
 
@@ -31,44 +31,39 @@ def create_grid(size, mines):
 
 
 def display_grid(grid):
-	n = len(grid)
-
+	height = len(grid)
+	width = len(grid[0])
 	print('╔', end = '')
-	for i in range(n - 1):
+	for i in range(width - 1):
 		print('═══╦', end = '')
 	print('═══╗')
 
-	for i in range(n):
+	for i in range(height):
 		print('║', end = '')
-		for j in range(n):
+		for j in range(width):
 			print(' ' + str(grid[i][j]) + ' ' + '║', end = '')
 
-		if i != n-1:
+		if i != height - 1:
 			print('\n╠', end = '')
-			for j in range(n - 1):
+			for j in range(width - 1):
 				print('═══╬', end = '')
 			print('═══╣')
 		else:
 			print('\n╚', end = '')
-			for i in range(n - 1):
+			for i in range(width - 1):
 				print('═══╩', end = '')
 			print('═══╝')
 
 
-display_grid(create_grid(10, 20))
+display_grid(create_grid(16, 30, 99))
 
 
 # def start_game:
 # 	diff = difficulty():
-
 # 	if diff == '1':
-# 		grid = create_grid(10, 10)
+# 		grid = create_grid(9, 9, 10)
 # 	elif diff == '2':
-# 		grid = create_grid(20, 20)
+# 		grid = create_grid(16, 16, 40)
 # 	else: 
-# 		grid == create_grid(50, 100)
-
-
-
-
+# 		grid == create_grid(16, 30, 99)
 
