@@ -58,12 +58,24 @@ def display_grid(grid):
 display_grid(create_grid(16, 30, 99))
 
 
-# def start_game:
-# 	diff = difficulty():
-# 	if diff == '1':
-# 		grid = create_grid(9, 9, 10)
-# 	elif diff == '2':
-# 		grid = create_grid(16, 16, 40)
-# 	else: 
-# 		grid == create_grid(16, 30, 99)
+def start_game:
+	diff = difficulty():
+	if diff == '1':
+		height, width, mines = (9, 9, 10)
+
+	elif diff == '2':
+		height, width, mines = (16, 16, 40)
+
+	else: 
+		height, width, mines = (9, 9, 10)
+
+	answ = create_grid(height, width, mines)
+	grid = []
+	for i in range(height):
+		grid.append([0] * width)
+
+
+
+
+
 
