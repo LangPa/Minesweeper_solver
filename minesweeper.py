@@ -8,16 +8,24 @@ def difficulty():
 	while diff not in ['1','2','3']:
 		diff = input("Please input difficulty '1', '2' or '3': ")
 
-def create_grid(height, width, mines):
+def create_grid(height, width, mines, initial):
 	grid = []
+
 	for i in range(height):
 		grid.append([0] * width)
+
+
+
+	intial_space = [initial]
+	for x, y in itertools.product([-1,0,1], repeat = 2):
+		if (initial[0] + y) in range(height) and (initial[1] + x) in range(width):
+			intial_space += [[initial[0] + y, initial[1] + x]]
 
 	for i in range(mines):
 
 		while True:
 			pos = [random.randint(0, height - 1), random.randint(0, width - 1)]
-			if grid[pos[0]][pos[1]] != '*':
+			if (grid[pos[0]][pos[1]] != '*') and (pos not in intial_space):
 				grid[pos[0]][pos[1]] = '*'
 				break
 
@@ -69,10 +77,16 @@ def start_game:
 	else: 
 		height, width, mines = (9, 9, 10)
 
+	initial = input('Input initial')
+
 	answ = create_grid(height, width, mines)
 	grid = []
 	for i in range(height):
-		grid.append([0] * width)
+		grid.append([' '] * width)
+
+
+
+
 
 
 
