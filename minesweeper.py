@@ -3,10 +3,10 @@
 import random, itertools
 import numpy as np
 
-def difficulty():
-	diff = input('Input difficulty: ')
-	while diff not in ['1','2','3']:
-		diff = input("Please input difficulty '1', '2' or '3': ")
+# def difficulty():
+# 	diff = input('Input difficulty: ')
+# 	while diff not in ['1','2','3']:
+# 		diff = input("Please input difficulty '1', '2' or '3': ")
 
 def create_grid(height, width, mines, initial):
 	grid = []
@@ -63,33 +63,49 @@ def display_grid(grid):
 			print('═══╝')
 
 
-display_grid(create_grid(16, 30, 99))
+# display_grid(create_grid(16, 30, 99, (10,1)))
 
-
-def start_game:
-	diff = difficulty():
-	if diff == '1':
+def start_game(initial, diff = 3):
+	if diff == 1:
 		height, width, mines = (9, 9, 10)
 
-	elif diff == '2':
+	elif diff == 2:
 		height, width, mines = (16, 16, 40)
 
 	else: 
-		height, width, mines = (9, 9, 10)
+		height, width, mines = (16, 30, 99)
 
-	initial = input('Input initial')
-
-	answ = create_grid(height, width, mines)
+	answ = create_grid(height, width, mines, initial)
 	grid = []
 	for i in range(height):
 		grid.append([' '] * width)
 
+	grid = unveil(grid, answ, initial)
+	print(display_grid(grid))
+
+def unveil(grid, answ, choice):
+	height = len(grid)
+	width = len(grid[0])
+
+	if answ[choice[0]][choice[1]] == '*':
+		print('boom')
+		return 'Boom'
+
+	elif answ[choice[0]][choice[1]] == 0:
+		answ[choice[0]][choice[1]] = 9
+		for x, y in itertools.product([-1,0,1], repeat = 2):
+			if (choice[0] + y) in range(height) and (choice[1] + x) in range(width):
+				if grid[choice[0] + y][choice[1] + x] != ' ':
+					continue
+				grid = unveil(grid, answ, (choice[0] + y, choice[1] + x))
+		answ[choice[0]][choice[1]] = 0
+		grid[choice[0]][choice[1]] = answ[choice[0]][choice[1]]
+		return grid
 
 
+	else:
+		grid[choice[0]][choice[1]] = answ[choice[0]][choice[1]]
+		return grid
 
-
-
-
-
-
-
+			
+start_game((5,5), 1)
