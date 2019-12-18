@@ -82,6 +82,21 @@ def start_game(initial, diff = 3):
 
 	grid = unveil(grid, answ, initial)
 	print(display_grid(grid))
+	print(display_grid(answ))
+
+	while grid != 'Boom':
+		print('Input choice')
+		while True
+			try:
+				choice = int(input('row: ')), int(input('column: '))
+				break
+			except:
+				print('please enter a number in the correct range')
+
+		grid = unveil(grid, answ, choice)
+		display_grid(grid)
+
+
 
 def unveil(grid, answ, choice):
 	height = len(grid)
@@ -108,4 +123,6 @@ def unveil(grid, answ, choice):
 		return grid
 
 			
+def mine_count(grid, answ):
+	mine_count = 
 start_game((5,5), 1)
