@@ -1,6 +1,6 @@
 """ A simple codde for minesweeper"""
 
-import random, itertools
+import random, itertools, sys
 import numpy as np
 
 # def difficulty():
@@ -81,20 +81,34 @@ def start_game(initial, diff = 3):
 		grid.append([' '] * width)
 
 	grid = unveil(grid, answ, initial)
-	print(display_grid(grid))
-	print(display_grid(answ))
+	display_grid(grid)
+
+	to_clear = height * width - mines
 
 	while grid != 'Boom':
 		print('Input choice')
-		while True
+		while True:
 			try:
 				choice = int(input('row: ')), int(input('column: '))
 				break
 			except:
-				print('please enter a number in the correct range')
+				if input('please enter a number in the correct range, or press q to quit: ') == 'q':
+					sys.exit()
+
 
 		grid = unveil(grid, answ, choice)
 		display_grid(grid)
+
+		cleared = 0
+		for row in grid:
+			for square in row:
+				if square != ' ':
+					cleared += 1
+		if cleared == to_clear:
+			print('Congratulations!')
+			break
+
+		
 
 
 
@@ -123,6 +137,5 @@ def unveil(grid, answ, choice):
 		return grid
 
 			
-def mine_count(grid, answ):
-	mine_count = 
+
 start_game((5,5), 1)
