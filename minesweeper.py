@@ -10,31 +10,27 @@ import numpy as np
 
 def create_grid(height, width, mines, initial):
 	grid = []
+	pos = [x for x in itertools.product(range(height), range(width))]
 
 	for i in range(height):
 		grid.append([0] * width)
 
-
-
-	intial_space = [initial]
 	for x, y in itertools.product([-1,0,1], repeat = 2):
 		if (initial[0] + y) in range(height) and (initial[1] + x) in range(width):
-			intial_space += [[initial[0] + y, initial[1] + x]]
+			pos.remove((initial[0] + y, initial[1] + x))
 
 	for i in range(mines):
 
-		while True:
-			pos = [random.randint(0, height - 1), random.randint(0, width - 1)]
-			if (grid[pos[0]][pos[1]] != '*') and (pos not in intial_space):
-				grid[pos[0]][pos[1]] = '*'
-				break
+		pos_x = random.randint(0,len(pos) - 1)
+		print(pos[pos_x][0], pos[pos_x][1])
+		grid[pos[pos_x][0]][pos[pos_x][1]] = '*'
 
 		for x, y in itertools.product([-1,0,1], repeat = 2):
-			if (pos[0] + y) in range(height) and (pos[1] + x) in range(width):
-				if grid[pos[0] + y][pos[1] + x] != '*':
-					grid[pos[0] + y][pos[1] + x] += 1
+			if (pos[pos_x][0] + y) in range(height) and (pos[pos_x][1] + x) in range(width):
+				if grid[pos[pos_x][0] + y][pos[pos_x][1] + x] != '*':
+					grid[pos[pos_x][0] + y][pos[pos_x][1] + x] += 1
 
-
+	print(grid)
 	return grid
 
 
@@ -138,4 +134,4 @@ def unveil(grid, answ, choice):
 
 			
 
-start_game((5,5), 1)
+start_game((5,5), 3)
