@@ -144,23 +144,35 @@ class game:
 
 		height = self.height_
 		width = self.width_
-		print('╔', end = '')
+
+		print('     ', end = '')
+		for i in range(width):
+			if i > 9:
+				print(i, end = '  ')
+			else:
+				print(i, end = '   ')
+		print('')
+
+		print('   ╔', end = '')
 		for i in range(width - 1):
 			print('═══╦', end = '')
 		print('═══╗')
 
 		for i in range(height):
-			print('║', end = '')
+			if i < 10:
+				print(i, end = '  ║')
+			else:
+				print(i, end = ' ║')
 			for j in range(width):
 				print(' ' + str(grid[i][j]) + ' ' + '║', end = '')
 
 			if i != height - 1:
-				print('\n╠', end = '')
+				print('\n   ╠', end = '')
 				for j in range(width - 1):
 					print('═══╬', end = '')
 				print('═══╣')
 			else:
-				print('\n╚', end = '')
+				print('\n   ╚', end = '')
 				for i in range(width - 1):
 					print('═══╩', end = '')
 				print('═══╝')
