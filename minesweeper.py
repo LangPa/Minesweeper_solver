@@ -2,6 +2,7 @@
 
 import random, itertools, sys
 import numpy as np
+from time import time
 
 class game:
 	"""
@@ -15,12 +16,20 @@ class game:
 	Attributes:
 		minefield_ (list): Current minefield
 		solution_ (list): Full solution
+		game_finished_ (bool): game finished or not
+		height_ (int): height of minefield
+		width_ (int): width of minefield
+		mines_ (int): number of mines remaining
+		remain_ (int): number of squares to clear
+		false_positives_ (int): number of squares incorrectly flagged
+		true_positives_ (int): number of correctly flagged squares
 	"""
 	def __init__(self, start = (5,5), difficulty = 3):
 		self.start = start
 		self.difficulty = difficulty
 		self.false_positives_ = 0
 		self.true_positives_ = 0
+		self.game_finished_ = True
 
 	def reset(self, start = None, difficulty = None):
 		"""
@@ -70,7 +79,6 @@ class game:
 				pos.remove((self.start[0] + y, self.start[1] + x))
 
 		for i in range(mines):
-
 			pos_x = random.randint(0,len(pos) - 1)
 			grid[pos[pos_x][0]][pos[pos_x][1]] = '*'
 
@@ -78,17 +86,27 @@ class game:
 				if (pos[pos_x][0] + y) in range(height) and (pos[pos_x][1] + x) in range(width):
 					if grid[pos[pos_x][0] + y][pos[pos_x][1] + x] != '*':
 						grid[pos[pos_x][0] + y][pos[pos_x][1] + x] += 1
-		
+			pos.pop(pos_x)
+
 		field = []
 		for i in range(height):
 			field.append([' '] * width)
 
 		self.minefield_ = field
 		self.solution_ = grid
+		self.height_ = height
+		self.width_ = width
 		self.mines_ = mines
+		self.remain_ = height * width - mines
+		self.game_finished_ = False
 		self.unveil(self.start)
+		self.start_time_ = time()
 
 		return self
+
+	def timer(self):
+		print(f'{time() - self.start_time_}s')
+		self.time_ = time() - self.start_time_
 
 	def flag(self, choice):
 		"""
@@ -100,6 +118,9 @@ class game:
 		Returns:
 			self: updated minefield
 		"""
+		if self.game_finished_:
+			print('Game is finished, reset to start again.')
+			return self
 
 		if self.minefield_[choice[0]][choice[1]] == ' ':
 
@@ -121,8 +142,8 @@ class game:
 		if not grid:
 			grid = self.minefield_
 
-		height = len(grid)
-		width = len(grid[0])
+		height = self.height_
+		width = self.width_
 		print('╔', end = '')
 		for i in range(width - 1):
 			print('═══╦', end = '')
@@ -154,18 +175,15 @@ class game:
 		Returns:
 			self: unpdated grid
 		"""
+		if self.game_finished_:
+			print('Game is finished, reset to start again.')
+			return self
+
 		height = len(self.minefield_)
 		width = len(self.minefield_[0])
 
 		if self.solution_[choice[0]][choice[1]] == '*':
-			print('boom')
-			for i in range(height):
-				for j in range(width):
-					if self.solution_[i][j] == '*':
-						self.minefield_[i][j] = '*'
-			self.display()
-			self.reset
-			return 'Boom'
+			self.reveal(choice)
 
 		elif self.solution_[choice[0]][choice[1]] == 0:
 			self.solution_[choice[0]][choice[1]] = 9
@@ -176,44 +194,118 @@ class game:
 					self.unveil((choice[0] + y, choice[1] + x))
 			self.solution_[choice[0]][choice[1]] = 0
 			self.minefield_[choice[0]][choice[1]] = self.solution_[choice[0]][choice[1]]
-			return self
 
 		else:
 			self.minefield_[choice[0]][choice[1]] = self.solution_[choice[0]][choice[1]]
+			self.remain_ -= 1
+		
+		if self.remain_ == 0:
+			print('Complete!')
+			self.reveal()
+		
+		return self
+
+	def reveal(self, choice = None):
+		"""
+		Reveals the position of all the mines and ends the game
+		"""
+
+		for i in range(self.height_):
+			for j in range(self.width_):
+				if (i,j) == choice:
+					self.minefield_[i][j] = '!'
+				elif self.minefield_[i][j] == 'F':
+					if self.solution_[i][j] != '*':
+						self.minefield_[i][j] = 'X'
+				elif self.solution_[i][j] == '*':
+					self.minefield_[i][j] = '*'
+		self.display()
+		self.game_finished_ = True
+		self.timer()
+		return self
+		
+	def OLSsolve(self, precision = 0.001):
+		"""
+		Method employing the Ordinary Least Squares estimation to uncover squares
+
+		Returns:
+			self: minefield with all certain mines flagged and certain clear squares uncovered
+		"""
+
+		if self.game_finished_:
+			print('Game is finished, reset to start again.')
 			return self
 
-# def start_game(self):
+		# Create matrix of linear equations of covered squares
+		# Squares are considered only if they are adjactent to an uncovered square and is not flagged
+		squares = {}
+		nbhr = []
+		for i in range(self.height_):
+			for j in range(self.width_):
+				a = self.minefield_[i][j]
+				flags = 0
+				if a in range(1,9):
+					for x, y in itertools.product([-1,0,1], repeat = 2):
+						if (i + y) in range(self.height_) and (j + x) in range(self.width_):
+							if self.minefield_[i + y][j + x] == ' ':
+								squares[(i,j)] = squares.get((i,j), []) + [(i + y, j + x)]
+								if (i + y,j + x) not in nbhr:
+									nbhr += [(i + y,j + x)]
+							elif self.minefield_[i + y][x + j] == 'F':
+								flags += 1
+					if (i,j) in squares.keys():
+						squares[(i,j)] += [a - flags]
+		
+		X = np.zeros((len(squares), len(nbhr)))
+		y = np.asarray([value[-1] for key, value in squares.items()])
+		for index, items in enumerate(squares.items()):
+			for adj in items[1][:-1]:
+				X[index, nbhr.index(adj)] = 1
+		
 
-# 	answ = create_grid()
-# 	grid = []
-# 	for i in range(height):
-# 		grid.append([' '] * width)
+		beta = np.linalg.lstsq(X,y, rcond=-1)
+		b_true = []
+		for pos in nbhr:
+			b_true += [self.solution_[pos[0]][pos[1]]]		
+		
+		change = False
+		selection = []
+		while not change:
+			print(f'precision: {precision}')
+			for a,b,c in zip(beta[0], b_true, nbhr):
+				print(f'predict: {a:.3f}, true: {b}, {c}')
+				if self.game_finished_:
+					break
+				if a < precision and a > 0 - precision:
+					# print(f'predict: {a:.3f}, true: {b}, {c}')
+					if b == '*':
+						print('false negative')
+					self.unveil(c)
+					change = True
+				elif a > 1 - precision and a < 1 + precision:
+					selection += [c]
+					# print(f'predict: {a:.3f}, true: {b}, {c}')
+					if b != '*':
+						print('false positive')
+					self.flag(c)
+					change = True
+				
+			precision += 0.005
 
-# 	grid = unveil(grid, answ, self.start)
-# 	display_grid(grid)
+		
 
-# 	to_clear = height * width - mines
+Game = game()	
+Game.create_grid()
 
-# 	while grid != 'Boom':
-# 		print('Input choice')
-# 		while True:
-# 			try:
-# 				choice = int(input('row: ')), int(input('column: '))
-# 				break
-# 			except:
-# 				if input('please enter a number in the correct range, or press q to quit: ') == 'q':
-# 					sys.exit()
+# Game.display()
+# Game.OLSsolve()
+# Game.display()
+# Game.OLSsolve()
+# Game.display()
+# Game.OLSsolve()
+# print(Game.time_)
+# Game.display()
 
-
-# 		grid = unveil(grid, answ, choice)
-# 		display_grid(grid)
-
-# 		cleared = 0
-# 		for row in grid:
-# 			for square in row:
-# 				if square != ' ':
-# 					cleared += 1
-# 		if cleared == to_clear:
-# 			print('Congratulations!')
-# 			break
-
+while not Game.game_finished_:
+	Game.display()
+	Game.OLSsolve()
