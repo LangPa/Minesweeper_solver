@@ -3,6 +3,7 @@
 import random, itertools, sys
 import numpy as np
 from time import time
+from scipy import optimize
 
 class game:
 	"""
@@ -196,16 +197,20 @@ class game:
 
 		if self.solution_[choice[0]][choice[1]] == '*':
 			self.reveal(choice)
+		
+		elif self.minefield_[choice[0]][choice[1]] != ' ':
+			pass
 
 		elif self.solution_[choice[0]][choice[1]] == 0:
 			self.solution_[choice[0]][choice[1]] = 9
+			self.minefield_[choice[0]][choice[1]] = 0
+			self.remain_ -= 1
 			for x, y in itertools.product([-1,0,1], repeat = 2):
 				if (choice[0] + y) in range(height) and (choice[1] + x) in range(width):
 					if self.minefield_[choice[0] + y][choice[1] + x] != ' ':
 						continue
 					self.unveil((choice[0] + y, choice[1] + x))
 			self.solution_[choice[0]][choice[1]] = 0
-			self.minefield_[choice[0]][choice[1]] = self.solution_[choice[0]][choice[1]]
 
 		else:
 			self.minefield_[choice[0]][choice[1]] = self.solution_[choice[0]][choice[1]]
@@ -275,7 +280,9 @@ class game:
 				X[index, nbhr.index(adj)] = 1
 		
 
-		beta = np.linalg.lstsq(X,y, rcond=-1)
+		# beta = np.linalg.lstsq(X,y, rcond=-1)
+		# beta = optimize.nnls(X, y)
+		beta = optimize.lsq_linear(X, y, (0,1))
 		b_true = []
 		for pos in nbhr:
 			b_true += [self.solution_[pos[0]][pos[1]]]		
@@ -284,7 +291,7 @@ class game:
 		selection = []
 		while not change:
 			print(f'precision: {precision}')
-			for a,b,c in zip(beta[0], b_true, nbhr):
+			for a,b,c in zip(beta['x'], b_true, nbhr):
 				print(f'predict: {a:.3f}, true: {b}, {c}')
 				if self.game_finished_:
 					break
@@ -306,7 +313,7 @@ class game:
 
 		
 
-Game = game()	
+Game = game(difficulty = 3)	
 Game.create_grid()
 
 # Game.display()
@@ -320,4 +327,5 @@ Game.create_grid()
 
 while not Game.game_finished_:
 	Game.display()
+	print(Game.remain_)
 	Game.OLSsolve()
