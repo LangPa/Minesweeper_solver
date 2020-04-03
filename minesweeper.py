@@ -292,22 +292,24 @@ class game:
 		while not change:
 			print(f'precision: {precision}')
 			for a,b,c in zip(beta['x'], b_true, nbhr):
-				print(f'predict: {a:.3f}, true: {b}, {c}')
+				# print(f'predict: {a:.3f}, true: {b}, {c}')
 				if self.game_finished_:
 					break
 				if a < precision and a > 0 - precision:
-					# print(f'predict: {a:.3f}, true: {b}, {c}')
+					print(f'predict: {a:.3f}, true: {b}, {c}')
 					if b == '*':
 						print('false negative')
 					self.unveil(c)
 					change = True
 				elif a > 1 - precision and a < 1 + precision:
 					selection += [c]
-					# print(f'predict: {a:.3f}, true: {b}, {c}')
+					print(f'predict: {a:.3f}, true: {b}, {c}')
 					if b != '*':
 						print('false positive')
 					self.flag(c)
 					change = True
+				if change and precision > 0.2:
+					break
 				
 			precision += 0.005
 
