@@ -4,6 +4,7 @@ import random, itertools, sys
 import numpy as np
 from time import time
 from scipy import optimize
+import copy
 
 class game:
 	"""
@@ -135,29 +136,30 @@ class game:
 
 		return self
 
-	def display(self, grid = None):
+	def display(self, grid = 'field', sf = 3):
 		"""
 		displays grid on terminal
 
 		"""
-		if not grid:
+		if grid == 'field':
 			grid = self.minefield_
 
 		height = self.height_
 		width = self.width_
 
-		print('     ', end = '')
+		print('    ', end = '')
 		for i in range(width):
-			if i > 9:
-				print(i, end = '  ')
-			else:
-				print(i, end = '   ')
+			# if i > 9:
+			# 	print(i, end = '  ')
+			# else:
+			# 	print(i, end = '   ')
+			print(f'{i:^{sf}}',end = ' ')
 		print('')
 
 		print('   ╔', end = '')
 		for i in range(width - 1):
-			print('═══╦', end = '')
-		print('═══╗')
+			print('═'*sf + '╦', end = '')
+		print('═'*sf + '╗')
 
 		for i in range(height):
 			if i < 10:
@@ -165,18 +167,18 @@ class game:
 			else:
 				print(i, end = ' ║')
 			for j in range(width):
-				print(' ' + str(grid[i][j]) + ' ' + '║', end = '')
-
+				# print(' ' + str(grid[i][j]) + ' ' + '║', end = '')
+				print(f'{grid[i][j]:^{sf}}' + '║', end = '')
 			if i != height - 1:
 				print('\n   ╠', end = '')
 				for j in range(width - 1):
-					print('═══╬', end = '')
-				print('═══╣')
+					print('═'*sf + '╬', end = '')
+				print('═'*sf + '╣')
 			else:
 				print('\n   ╚', end = '')
 				for i in range(width - 1):
-					print('═══╩', end = '')
-				print('═══╝')
+					print('═'*sf + '╩', end = '')
+				print('═'*sf + '╝')
 
 	def unveil(self, choice):
 		"""
@@ -241,7 +243,7 @@ class game:
 		self.timer()
 		return self
 		
-	def OLSsolve(self, precision = 0.001):
+	def OLSsolve(self, precision = 0.001, show_prob = False):
 		"""
 		Method employing the Ordinary Least Squares estimation to uncover squares
 
@@ -279,22 +281,33 @@ class game:
 			for adj in items[1][:-1]:
 				X[index, nbhr.index(adj)] = 1
 		
-
+		# print(X)
+		# print(y)
 		# beta = np.linalg.lstsq(X,y, rcond=-1)
 		# beta = optimize.nnls(X, y)
 		beta = optimize.lsq_linear(X, y, (0,1))
 		b_true = []
-		for pos in nbhr:
-			b_true += [self.solution_[pos[0]][pos[1]]]		
 		
+		if show_prob:
+			prob_grid = copy.deepcopy(self.minefield_)
+
+		for pos, prob in zip(nbhr, beta['x']):
+			b_true += [self.solution_[pos[0]][pos[1]]]
+			if show_prob:
+				prob_grid[pos[0]][pos[1]] = f'{prob:.3f}'
+
+		if show_prob:
+			self.display(grid = prob_grid, sf = 5)
+
+		# print([tup for tup in zip(beta['x'], b_true, nbhr)])
 		change = False
 		selection = []
 		while not change:
-			print(f'precision: {precision}')
+			# print(f'precision: {precision}')
 			for a,b,c in zip(beta['x'], b_true, nbhr):
 				# print(f'predict: {a:.3f}, true: {b}, {c}')
-				if self.game_finished_:
-					break
+				# if self.game_finished_:
+				# 	break
 				if a < precision and a > 0 - precision:
 					print(f'predict: {a:.3f}, true: {b}, {c}')
 					if b == '*':
@@ -308,7 +321,7 @@ class game:
 						print('false positive')
 					self.flag(c)
 					change = True
-				if change and precision > 0.2:
+				if change and precision > 0.05:
 					break
 				
 			precision += 0.005
@@ -328,6 +341,6 @@ Game.create_grid()
 # Game.display()
 
 while not Game.game_finished_:
-	Game.display()
+	# Game.display()
 	print(Game.remain_)
-	Game.OLSsolve()
+	Game.OLSsolve(show_prob = True)
