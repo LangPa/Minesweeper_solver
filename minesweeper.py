@@ -287,7 +287,6 @@ class game:
 		# beta = optimize.nnls(X, y)
 		beta = optimize.lsq_linear(X, y, (0,1))
 		b_true = []
-		
 		if show_prob:
 			prob_grid = copy.deepcopy(self.minefield_)
 
@@ -327,20 +326,11 @@ class game:
 			precision += 0.005
 
 		
+if __name__ == "__main__":
+	Game = game(difficulty = 1)	
+	Game.create_grid()
 
-Game = game(difficulty = 3)	
-Game.create_grid()
-
-# Game.display()
-# Game.OLSsolve()
-# Game.display()
-# Game.OLSsolve()
-# Game.display()
-# Game.OLSsolve()
-# print(Game.time_)
-# Game.display()
-
-while not Game.game_finished_:
-	# Game.display()
-	print(Game.remain_)
-	Game.OLSsolve(show_prob = True)
+	while not Game.game_finished_:
+		Game.display()
+		print(f'Mines remaining: {Game.remain_}')
+		Game.OLSsolve(show_prob = True)
